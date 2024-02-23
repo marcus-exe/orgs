@@ -7,13 +7,19 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import br.com.alura.orgs.dao.ProductsDao
 import br.com.alura.orgs.databinding.FragmentFormProductBinding
+import br.com.alura.orgs.extensions.tryUploadImage
 import br.com.alura.orgs.models.Product
+import br.com.alura.orgs.ui.dialog.FormImageDialog
 import java.math.BigDecimal
 
 class FormProductFragment : Fragment() {
     private var _binding: FragmentFormProductBinding? = null
     private val binding: FragmentFormProductBinding get() = _binding!!
+
     val dao = ProductsDao()
+
+    private var url: String? = null
+
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -21,11 +27,21 @@ class FormProductFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         _binding = FragmentFormProductBinding.inflate(inflater, container, false)
+        
         return binding.root
     }
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?){
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
         configureSaveButton()
+        binding.fragmentFormProductImage.setOnClickListener {
+            FormImageDialog(this.requireContext())
+                .showDialog(url) { image ->
+                    url = image
+                    binding.fragmentFormProductImage.tryUploadImage(url)
+                }
+        }
 
     }
 
@@ -51,7 +67,14 @@ class FormProductFragment : Fragment() {
             } else {
                 BigDecimal(textValue)
             }
-        dao.add(product = Product(name = name, description = description, value = value ))
+        dao.add(
+            product = Product(
+                name = name,
+                description = description,
+                value = value,
+                image = url
+            )
+        )
         activity?.onBackPressed()
     }
 }

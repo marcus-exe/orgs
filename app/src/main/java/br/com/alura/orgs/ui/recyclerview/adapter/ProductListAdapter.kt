@@ -4,11 +4,15 @@ import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import br.com.alura.orgs.R
 import br.com.alura.orgs.databinding.ProductItemBinding
+import br.com.alura.orgs.extensions.tryUploadImage
 import br.com.alura.orgs.models.Product
+import coil.load
+import java.math.BigDecimal
+import java.text.NumberFormat
+import java.util.Locale
 
 class ProductListAdapter(
     private val context: Context,
@@ -17,19 +21,33 @@ class ProductListAdapter(
 
     private val dataset = products.toMutableList()
 
-    class ViewHolder(binding: ProductItemBinding) : RecyclerView.ViewHolder(binding.root) {
-
-        private val name = binding.productItemName
-        private val description = binding.productItemDescription
-        private val value = binding.productItemValue
+    class ViewHolder(private val binding: ProductItemBinding) : RecyclerView.ViewHolder(binding.root) {
 
         fun bind(product: Product) {
-            //val name = itemView.findViewById<TextView>(R.id.product_item_name)
+            val name = binding.productItemName
             name.text = product.name
-            //val description = itemView.findViewById<TextView>(R.id.product_item_description)
+
+            val description = binding.productItemDescription
             description.text = product.description
-            //val value = itemView.findViewById<TextView>(R.id.product_item_value)
-            value.text = product.value.toPlainString()
+
+            val value = binding.productItemValue
+            val currencyValue: String = formatCurrency(product.value)
+            value.text = currencyValue
+
+
+            val visibility = if (product.image != null) {
+                View.VISIBLE
+            } else {
+                View.GONE
+            }
+            binding.imageView.visibility = visibility
+
+            binding.imageView.tryUploadImage(product.image)
+        }
+
+        private fun formatCurrency(value: BigDecimal): String {
+            val formatter: NumberFormat = NumberFormat.getCurrencyInstance(Locale("pt", "br"))
+            return formatter.format(value)
         }
     }
 
